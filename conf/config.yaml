@@ -1,0 +1,14 @@
+api:
+  name: server
+  port: 7000
+mysql:
+  dsn: root:123456@tcp(192.168.233.128:3306)/digiwinPlatform?charset=utf8mb4&parseTime=True&loc=Local
+  max_idle_conns: 10
+  max_open_conns: 10
+jwt:
+  #token有效期（暂时无用）
+  expire_duration: 3600
+  #签名
+  secret: 老王
+  #签发人
+  issuer: mmm
