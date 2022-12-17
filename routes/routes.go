@@ -29,6 +29,7 @@ func RegisterRoute(c *gin.Engine) {
 		workRecord := api.Group("/workRecord")
 		{
 			workRecord.GET("/wr/getRecordByHandlerid", middleware.JWTAuthMiddleware(), controllers.GetRecordByHandlerid)
+			workRecord.GET("wr/downloadRecordTemplate", controllers.DownloadRecordTemplate)
 		}
 	}
 

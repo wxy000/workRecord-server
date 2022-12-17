@@ -3,6 +3,7 @@ package controllers
 import (
 	"server/common"
 	"server/models"
+	"server/utils"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -25,4 +26,9 @@ func GetRecordByHandlerid(c *gin.Context) {
 	} else {
 		common.FailWithMsg("获取信息失败，请稍后重试", c)
 	}
+}
+
+func DownloadRecordTemplate(c *gin.Context) {
+	filePath := "./data/导入excel模板.xlsx"
+	utils.DownloadFile(c, filePath)
 }
