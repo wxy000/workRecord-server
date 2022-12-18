@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// 登录
 func AuthHandler(c *gin.Context) {
 	// 用户发送用户名和密码过来
 	username := c.PostForm("username")
@@ -23,6 +24,7 @@ func AuthHandler(c *gin.Context) {
 	}
 }
 
+// 根据token获取用户信息
 func GetUserInfo(c *gin.Context) {
 	user, err := c.Get("user")
 	if !err {
@@ -32,6 +34,7 @@ func GetUserInfo(c *gin.Context) {
 	}
 }
 
+// 修改用户信息
 func UpdateUserInfo(c *gin.Context) {
 	user := models.Users{
 		Userid:   c.PostForm("userid"),
@@ -49,6 +52,7 @@ func UpdateUserInfo(c *gin.Context) {
 	}
 }
 
+// 修改密码
 func UpdatePassword(c *gin.Context) {
 	user, _ := c.Get("user")
 	userid := user.(models.Users).Userid

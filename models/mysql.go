@@ -10,7 +10,6 @@ import (
 )
 
 // 数据库初始化
-
 func InitMysql() {
 	log.Println("数据库初始化。。。")
 

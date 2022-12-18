@@ -8,6 +8,7 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
+// 导入工作记录
 func ImportDataWR(c *gin.Context) (bool, error) {
 	file, fileheader, err := c.Request.FormFile("file")
 	if err != nil {
@@ -25,7 +26,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 			} else {
 				for i, row := range rows {
 					if i == 0 {
-						log.Println("这是标题行")
+						log.Println("这是标题行，忽略此行")
 					} else {
 						for _, colCell := range row {
 							log.Print(colCell, "\t")

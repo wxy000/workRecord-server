@@ -5,6 +5,7 @@ import (
 	"server/globals"
 )
 
+// 根据id获取用户信息
 func GetUserInfoByID(userID string) (*Users, error) {
 	var user Users
 	result := globals.DB.Where("userid = ?", userID).Limit(1).Find(&user)
@@ -16,6 +17,8 @@ func GetUserInfoByID(userID string) (*Users, error) {
 	}
 	return &user, nil
 }
+
+// 用户登录
 func LoginByUsername(username string, password string) (*Users, error) {
 	var user Users
 	result := globals.DB.Where("username = ? and password = ?", username, password).Limit(1).Find(&user)
@@ -27,6 +30,8 @@ func LoginByUsername(username string, password string) (*Users, error) {
 	}
 	return &user, nil
 }
+
+// 根据id更新用户信息
 func UpdateUserInfoByID(user Users) error {
 	result := globals.DB.Model(&user).Omit("userid", "password").Where("userid = ?", user.Userid).Updates(user)
 	if result.RowsAffected < 1 {
@@ -34,6 +39,8 @@ func UpdateUserInfoByID(user Users) error {
 	}
 	return nil
 }
+
+// 根据id修改用户密码
 func UpdatePasswordByID(userid string, oldpw string, password string) error {
 	var user Users
 	r1 := globals.DB.Where("userid = ? and password = ?", userid, oldpw).First(&user)

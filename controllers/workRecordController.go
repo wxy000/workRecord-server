@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// 根据处理人获取工作记录
 func GetRecordByHandlerid(c *gin.Context) {
 	user, _ := c.Get("user")
 	handlerid := user.(models.Users).Userid
@@ -28,11 +29,13 @@ func GetRecordByHandlerid(c *gin.Context) {
 	}
 }
 
+// 下载导入模板
 func DownloadRecordTemplate(c *gin.Context) {
 	filePath := "./data/导入excel模板.xlsx"
 	utils.DownloadFile(c, filePath)
 }
 
+// 导入工作记录
 func ImportData(c *gin.Context) {
 	succ, err := utils.ImportDataWR(c)
 	if succ {

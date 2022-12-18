@@ -37,6 +37,7 @@ type RecordList struct {
 	Mark               string  `json:"mark"`
 }
 
+// 根据处理人获取工作记录
 func GetRecordByHandlerid(handlerid string, c *gin.Context) (bool, *[]RecordList, int64) {
 	var d1 []RecordList
 	res := globals.DB.Table("records a").
