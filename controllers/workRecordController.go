@@ -32,3 +32,12 @@ func DownloadRecordTemplate(c *gin.Context) {
 	filePath := "./data/导入excel模板.xlsx"
 	utils.DownloadFile(c, filePath)
 }
+
+func ImportData(c *gin.Context) {
+	succ, err := utils.ImportDataWR(c)
+	if succ {
+		common.OkWithMsg(err.Error(), c)
+	} else {
+		common.FailWithMsg(err.Error(), c)
+	}
+}
