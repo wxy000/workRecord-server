@@ -65,7 +65,7 @@ type Record struct {
 	Casestatus         uint    `json:"casestatus" gorm:"not null;default:2;comment:案件状态-1.未结案，2.已结案"`
 	Onsite             uint    `json:"onsite" gorm:"not null;default:2;comment:是否现场已处理-1.是，2.否"`
 	Closetime          string  `json:"closetime" gorm:"type:datetime;not null;comment:结案时间"`
-	Bugpeopleid        string  `json:"bugpeopleid" gorm:"size:20;not null;comment:客制bug负责人"`
+	Bugpeopleid        string  `json:"bugpeopleid" gorm:"size:20;comment:客制bug负责人"`
 	Mark               string  `json:"mark" gorm:"size:2000;comment:备注"`
 }
 

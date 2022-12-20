@@ -6,16 +6,19 @@ import (
 )
 
 // 根据id获取用户信息
-func GetUserInfoByID(userID string) (*Users, error) {
+func GetUserInfoByID(userID string) (int64, *Users, error) {
 	var user Users
+	if userID == "" {
+		return 0, nil, errors.New("用户编号不得为空")
+	}
 	result := globals.DB.Where("userid = ?", userID).Limit(1).Find(&user)
 	if result.Error != nil {
-		return nil, result.Error
+		return 0, nil, result.Error
 	}
 	if result.RowsAffected < 1 {
-		return nil, errors.New("无数据")
+		return 0, nil, errors.New("用户不存在")
 	}
-	return &user, nil
+	return result.RowsAffected, &user, nil
 }
 
 // 用户登录
