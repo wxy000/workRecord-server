@@ -21,6 +21,22 @@ func GetUserInfoByID(userID string) (int64, *Users, error) {
 	return result.RowsAffected, &user, nil
 }
 
+// 根据username获取用户信息
+func GetUserInfoByUsername(username string) (int64, *Users, error) {
+	var user Users
+	if username == "" {
+		return 0, nil, errors.New("用户编号不得为空")
+	}
+	result := globals.DB.Where("username = ?", username).Limit(1).Find(&user)
+	if result.Error != nil {
+		return 0, nil, result.Error
+	}
+	if result.RowsAffected < 1 {
+		return 0, nil, errors.New("用户不存在")
+	}
+	return result.RowsAffected, &user, nil
+}
+
 // 用户登录
 func LoginByUsername(username string, password string) (*Users, error) {
 	var user Users

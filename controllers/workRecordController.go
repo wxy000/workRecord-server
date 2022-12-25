@@ -12,7 +12,7 @@ import (
 // 根据处理人获取工作记录
 func GetRecordByHandlerid(c *gin.Context) {
 	user, _ := c.Get("user")
-	handlerid := user.(models.Users).Userid
+	handlerid := user.(models.Users).Username
 	succ, recordList, count := models.GetRecordByHandlerid(handlerid, c)
 	if succ {
 		for i := 0; i < len(*recordList); i++ {

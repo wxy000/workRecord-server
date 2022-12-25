@@ -3,8 +3,10 @@ package utils
 import (
 	"errors"
 	"log"
+	"server/models"
 	"server/utils/check"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
@@ -27,6 +29,9 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 				return false, err2
 			} else {
 				errStr := ""
+				// 暂存的数组
+				var records []models.Records
+				var record models.Records
 				for i, row := range rows {
 					if i == 0 {
 						log.Println("这是标题行，忽略此行")
@@ -45,6 +50,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
 								}
+								record.Customerid = colCell
 							}
 							// 作业编号校验
 							if j == 1 {
@@ -52,6 +58,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
 								}
+								record.Number = colCell
 							}
 							// 问题标题校验
 							if j == 2 {
@@ -59,6 +66,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
 								}
+								record.Title = colCell
 							}
 							// 问题描述校验
 							if j == 3 {
@@ -66,6 +74,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
 								}
+								record.Content = colCell
 							}
 							// 反馈人校验
 							if j == 4 {
@@ -73,6 +82,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + "反馈人：" + err3
 								}
+								record.Feedbackid = colCell
 							}
 							// 反馈时间校验
 							if j == 5 {
@@ -80,6 +90,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + "反馈时间：" + err3
 								}
+								record.Feedbackdate = colCell
 							}
 							// 产品校验
 							if j == 6 {
@@ -87,6 +98,8 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
 								}
+								productidtmp := strings.Split(colCell, ".")
+								record.Productid = productidtmp[0]
 							}
 							// 是否紧急校验
 							if j == 7 {
@@ -94,6 +107,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
 								}
+								record.Urgent = colCell
 							}
 							// 问题分类校验
 							if j == 8 {
@@ -103,6 +117,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								} else {
 									issuemainidtmp = maintmp
 								}
+								record.Issuemainid = maintmp
 							}
 							// 问题类型校验
 							if j == 9 {
@@ -110,6 +125,8 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
 								}
+								detailidtmp := strings.Split(colCell, ".")
+								record.Issuedetailid = detailidtmp[0]
 							}
 							// 处理人校验
 							if j == 10 {
@@ -117,6 +134,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + "处理人：" + err3
 								}
+								record.Handlerid = colCell
 							}
 							// 预计处理时长校验
 							if j == 11 {
@@ -124,6 +142,8 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + "预计处理时长：" + err3
 								}
+								handleestimatetimetmp, _ := strconv.ParseFloat(colCell, 32)
+								record.Handleestimatetime = float32(handleestimatetimetmp)
 							}
 							// 实际处理时长校验
 							// 处理回复校验
@@ -132,6 +152,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
 								}
+								record.Handlereply = colCell
 							}
 							// 案件状态校验
 							if j == 13 {
@@ -139,6 +160,9 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
 								}
+								casestatustmp := strings.Split(colCell, ".")
+								casestatustmp1, _ := strconv.Atoi(casestatustmp[0])
+								record.Casestatus = uint(casestatustmp1)
 							}
 							// 是否现场处理校验
 							if j == 14 {
@@ -146,6 +170,9 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
 								}
+								onsitetmp := strings.Split(colCell, ".")
+								onsitetmp1, _ := strconv.Atoi(onsitetmp[0])
+								record.Onsite = uint(onsitetmp1)
 							}
 							// 结案时间校验
 							if j == 15 {
@@ -153,6 +180,7 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								if err3 != "" {
 									errStrTmp = errStrTmp + "结案时间：" + err3
 								}
+								record.Closetime = colCell
 							}
 							// bug人校验
 							// 备注校验
@@ -163,12 +191,20 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 						}
 						errStr = errStr + errStrTmp
 					}
+					if i != 0 {
+						records = append(records, record)
+					}
 				}
 				if errStr != "" {
 					return false, errors.New(errStr)
 				} else {
 					// 这里写插数据库
-					return true, errors.New("导入成功")
+					result := models.BatchSaveRecords(&records)
+					if result != nil {
+						return false, errors.New(result.Error())
+					} else {
+						return true, errors.New("导入成功")
+					}
 				}
 			}
 		}

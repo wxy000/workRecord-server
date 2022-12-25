@@ -127,3 +127,12 @@ func GetIssuedetailInfoByDetailid(detailid string) (int64, *Issuedetails, error)
 	}
 	return result.RowsAffected, &issuedetail, nil
 }
+
+// 批量插表
+func BatchSaveRecords(records *[]Records) error {
+	result := globals.DB.Create(records)
+	if result != nil {
+		return result.Error
+	}
+	return nil
+}

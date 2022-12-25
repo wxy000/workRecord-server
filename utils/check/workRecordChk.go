@@ -40,8 +40,8 @@ func ChkContent(content string) string {
 }
 
 // 检查人员
-func ChkUser(userid string) string {
-	_, _, err := models.GetUserInfoByID(userid)
+func ChkUser(username string) string {
+	_, _, err := models.GetUserInfoByUsername(username)
 	if err != nil {
 		return err.Error() + "；"
 	}

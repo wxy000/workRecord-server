@@ -46,7 +46,7 @@ type Customers struct {
 }
 
 // 记录表
-type Record struct {
+type Records struct {
 	gorm.Model
 	Customerid         string  `json:"customerid" gorm:"size:20;not null;comment:客户编号"`
 	Number             string  `json:"number" gorm:"size:100;not null;comment:作业编号"`
@@ -70,7 +70,7 @@ type Record struct {
 }
 
 func Setup() {
-	autoMigrate(&Users{}, &Products{}, &Issuemains{}, &Issuedetails{}, &Customers{}, &Record{})
+	autoMigrate(&Users{}, &Products{}, &Issuemains{}, &Issuedetails{}, &Customers{}, &Records{})
 }
 
 // 自动迁移
