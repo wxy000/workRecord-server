@@ -170,3 +170,8 @@ func ChkOnsite(onsite string) string {
 	}
 	return ""
 }
+
+// 检查备注
+func ChkMark(mark string) string {
+	return ""
+}

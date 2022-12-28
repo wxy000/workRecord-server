@@ -37,10 +37,8 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 						log.Println("这是标题行，忽略此行")
 					} else {
 						errStrTmp := ""
-						//暂存问题分类id，用以问题类型的关联校验
-						issuemainidtmp := ""
 						// 规定取多少列start
-						rownew := [16]string{}
+						rownew := [19]string{}
 						copy(rownew[:], row)
 						// 规定取多少列end
 						for j, colCell := range rownew {
@@ -114,14 +112,12 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								err3, maintmp := check.ChkIssuemain(colCell)
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
-								} else {
-									issuemainidtmp = maintmp
 								}
 								record.Issuemainid = maintmp
 							}
 							// 问题类型校验
 							if j == 9 {
-								err3 := check.ChkIssuedetail(issuemainidtmp, colCell)
+								err3 := check.ChkIssuedetail(record.Issuemainid, colCell)
 								if err3 != "" {
 									errStrTmp = errStrTmp + err3
 								}
@@ -146,6 +142,17 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 								record.Handleestimatetime = float32(handleestimatetimetmp)
 							}
 							// 实际处理时长校验
+							if j == 17 {
+								if colCell == "" {
+									colCell = strconv.FormatFloat(float64(record.Handleestimatetime), 'f', 2, 32)
+								}
+								err3 := check.ChkTimelong(colCell)
+								if err3 != "" {
+									errStrTmp = errStrTmp + "实际处理时长：" + err3
+								}
+								handleactualtimetmp, _ := strconv.ParseFloat(colCell, 32)
+								record.Handleactualtime = float32(handleactualtimetmp)
+							}
 							// 处理回复校验
 							if j == 12 {
 								err3 := check.ChkReply(colCell)
@@ -184,8 +191,14 @@ func ImportDataWR(c *gin.Context) (bool, error) {
 							}
 							// bug人校验
 							// 备注校验
+							if j == 18 {
+								err3 := check.ChkMark(colCell)
+								if err3 != "" {
+									errStrTmp = errStrTmp + err3
+								}
+								record.Mark = colCell
+							}
 						}
-						issuemainidtmp = ""
 						if errStrTmp != "" {
 							errStrTmp = "第" + strconv.Itoa(i+1) + "行：（" + errStrTmp + "）<br>"
 						}
