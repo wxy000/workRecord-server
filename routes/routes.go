@@ -32,6 +32,11 @@ func RegisterRoute(c *gin.Engine) {
 			workRecord.GET("/wr/downloadRecordTemplate", controllers.DownloadRecordTemplate)
 			workRecord.POST("/wr/importData", middleware.JWTAuthMiddleware(), controllers.ImportData)
 		}
+		analysis := api.Group("/analysis")
+		{
+			// 一定日期范围内的时长变化曲线
+			analysis.GET("/my/getAnalysis1", middleware.JWTAuthMiddleware(), controllers.GetAnalysis1)
+		}
 	}
 
 }
