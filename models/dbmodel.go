@@ -35,6 +35,14 @@ type Issuedetails struct {
 	Detailid   string `json:"detailid" gorm:"size:20;not null;unique;primary_key"`
 	Detailname string `json:"detailname" gorm:"size:100;not null"`
 	Mainid     string `json:"mainid" gorm:"size:20;not null;comment:所属大类"`
+	Classid    string `json:"classid" gorm:"size:20;not null;comment:自定义分类"`
+}
+
+// 自定义分类
+type Classes struct {
+	Classid   string `json:"classid" gorm:"size:20;not null;unique;primary_key"`
+	Classname string `json:"classname" gorm:"size:100;not null"`
+	Content   string `json:"content" gorm:"size:200;commemt:说明"`
 }
 
 // 客户表
@@ -70,7 +78,7 @@ type Records struct {
 }
 
 func Setup() {
-	autoMigrate(&Users{}, &Products{}, &Issuemains{}, &Issuedetails{}, &Customers{}, &Records{})
+	autoMigrate(&Users{}, &Products{}, &Issuemains{}, &Issuedetails{}, &Classes{}, &Customers{}, &Records{})
 }
 
 // 自动迁移
