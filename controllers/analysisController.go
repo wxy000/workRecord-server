@@ -74,3 +74,49 @@ func GetAnalysis2(c *gin.Context) {
 		common.FailWithMsg("获取信息失败，请稍后重试", c)
 	}
 }
+
+// 一定日期范围内的问题类型时长分布
+func GetAnalysis3(c *gin.Context) {
+	user, _ := c.Get("user")
+	handlerid := user.(models.Users).Username
+	feedbackdatestart := c.DefaultQuery("feedbackdatestart", "1900-01-01")
+	if feedbackdatestart == "" {
+		feedbackdatestart = "1900-01-01"
+	}
+	feedbackdatestart = feedbackdatestart + " 00:00:00"
+	feedbackdateend := c.DefaultQuery("feedbackdateend", "3000-12-31")
+	if feedbackdateend == "" {
+		feedbackdateend = "3000-12-31"
+	}
+	feedbackdateend = feedbackdateend + " 23:59:59"
+	succ, analysisRecordList3, count := models.GetAnalysisRecordList3(handlerid, feedbackdatestart, feedbackdateend)
+	if succ {
+		var es3sall []map[string]interface{}
+		var es3sall_item_sz []map[string]interface{}
+		for i := 0; i < len(*analysisRecordList3); i++ {
+			es3sall_item_sz_item := map[string]interface{}{"name": (*analysisRecordList3)[i].Detailname, "value": (*analysisRecordList3)[i].Handleactualtime}
+			if i == 0 {
+				es3sall_item_sz = append(es3sall_item_sz, es3sall_item_sz_item)
+			} else {
+				if (*analysisRecordList3)[i].Mainname == (*analysisRecordList3)[i-1].Mainname {
+					es3sall_item_sz = append(es3sall_item_sz, es3sall_item_sz_item)
+				} else {
+					es3sall_item := map[string]interface{}{"name": (*analysisRecordList3)[i-1].Mainname, "children": es3sall_item_sz}
+					es3sall = append(es3sall, es3sall_item)
+
+					es3sall_item_sz = []map[string]interface{}{}
+					es3sall_item_sz = append(es3sall_item_sz, es3sall_item_sz_item)
+				}
+			}
+			if i == len(*analysisRecordList3)-1 {
+				es3sall_item := map[string]interface{}{"name": (*analysisRecordList3)[i].Mainname, "children": es3sall_item_sz}
+				es3sall = append(es3sall, es3sall_item)
+			}
+		}
+		common.OkWithDataC(count, gin.H{
+			"es3sall": es3sall,
+		}, c)
+	} else {
+		common.FailWithMsg("获取信息失败，请稍后重试", c)
+	}
+}
