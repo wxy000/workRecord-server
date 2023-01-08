@@ -53,6 +53,14 @@ type Customers struct {
 	Cname           string `json:"cname" gorm:"size:100;comment:简称"`
 }
 
+// 月度范围
+type Rangemonths struct {
+	Nian      int64  `json:"nian" gorm:"primary_key;comment:年度"`
+	Yue       int64  `json:"yue" gorm:"primary_key;comment:月份"`
+	Datestart string `json:"datestart" gorm:"type:datetime;not null;comment:开始日期"`
+	Dateend   string `json:"dateend" gorm:"type:datetime;not null;comment:结束日期"`
+}
+
 // 记录表
 type Records struct {
 	gorm.Model
@@ -78,7 +86,7 @@ type Records struct {
 }
 
 func Setup() {
-	autoMigrate(&Users{}, &Products{}, &Issuemains{}, &Issuedetails{}, &Classes{}, &Customers{}, &Records{})
+	autoMigrate(&Users{}, &Products{}, &Issuemains{}, &Issuedetails{}, &Classes{}, &Customers{}, &Rangemonths{}, &Records{})
 }
 
 // 自动迁移
