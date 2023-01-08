@@ -34,6 +34,27 @@ type AnalysisRecordListSum struct {
 	Handleactualtime   float32 `json:"handleactualtime"`
 }
 
+type AnalysisRecordList4 struct {
+	Customername       string  `json:"customername"`
+	Number             string  `json:"number"`
+	Title              string  `json:"title"`
+	Content            string  `json:"content"`
+	Feedbackname       string  `json:"feedbackname"`
+	Feedbackdate       string  `json:"feedbackdate"`
+	Productname        string  `json:"productname"`
+	Urgent             string  `json:"urgent"`
+	Issuemainname      string  `json:"issuemainname"`
+	Issuedetailname    string  `json:"issuedetailname"`
+	Handlername        string  `json:"handlername"`
+	Handleestimatetime float32 `json:"handleestimatetime"`
+	Handleactualtime   float32 `json:"handleactualtime"`
+	Handlereply        string  `json:"handlereply"`
+	Casestatus         uint    `json:"casestatus"`
+	Onsite             uint    `json:"onsite"`
+	Closetime          string  `json:"closetime"`
+	Mark               string  `json:"mark"`
+}
+
 func GetAnalysisRecordList1(handlerid string, feedbackdatestart string, feedbackdateend string) (bool, *[]AnalysisRecordList1, int64) {
 	var d1 []AnalysisRecordList1
 	res := globals.DB.Table("records").
@@ -100,6 +121,25 @@ func GetAnalysisRecordListSum(handlerid string, feedbackdatestart string, feedba
 	res := globals.DB.Table("records a").
 		Select("sum(handleestimatetime) handleestimatetime,sum(handleactualtime) handleactualtime").
 		Where("handlerid = ? AND feedbackdate BETWEEN ? AND ?", handlerid, feedbackdatestart, feedbackdateend)
+	r1 := res.Scan(&d1)
+	if r1.Error != nil {
+		return false, nil, 0
+	}
+	return true, &d1, r1.RowsAffected
+}
+
+func GetAnalysisRecordList4(handlerid string, feedbackdatestart string, feedbackdateend string) (bool, *[]AnalysisRecordList4, int64) {
+	var d1 []AnalysisRecordList4
+	res := globals.DB.Table("records a").
+		Select("b.customername, a.`number`, a.title, a.content, c.realName feedbackname, a.feedbackdate, CONCAT(a.productid,\".\",d.productname) productname, a.urgent, CONCAT(a.issuemainid,\".\",e.mainName) issuemainname, CONCAT(a.issuedetailid,\".\",f.detailName) issuedetailname, g.realName handlername, a.handleestimatetime, a.handleactualtime, a.handlereply, a.casestatus, a.onsite, a.closetime, a.mark").
+		Joins("left join customers b on b.customerid = a.customerid").
+		Joins("left join users c on c.username = a.feedbackid").
+		Joins("LEFT JOIN products d on d.productid = a.productid").
+		Joins("LEFT JOIN issuemains e on e.mainid = a.issuemainid").
+		Joins("left join issuedetails f on f.detailid = a.issuedetailid").
+		Joins("left join users g on g.username = a.handlerid").
+		Where("handlerid = ? AND feedbackdate BETWEEN ? AND ?", handlerid, feedbackdatestart, feedbackdateend).
+		Order("a.feedbackdate desc")
 	r1 := res.Scan(&d1)
 	if r1.Error != nil {
 		return false, nil, 0

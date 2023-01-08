@@ -40,6 +40,8 @@ func RegisterRoute(c *gin.Engine) {
 			analysis.GET("/my/getAnalysis2", middleware.JWTAuthMiddleware(), controllers.GetAnalysis2)
 			// 一定日期范围内的问题类型时长分布
 			analysis.GET("/my/getAnalysis3", middleware.JWTAuthMiddleware(), controllers.GetAnalysis3)
+			// 一定日期范围内的数据明细
+			analysis.GET("/my/getAnalysis4", middleware.JWTAuthMiddleware(), controllers.GetAnalysis4)
 		}
 	}
 

@@ -4,6 +4,7 @@ import (
 	"server/common"
 	"server/models"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -149,6 +150,36 @@ func GetAnalysis3(c *gin.Context) {
 			"ac3s":    ac3s,
 			"tbs":     tbs,
 		}, c)
+	} else {
+		common.FailWithMsg("获取信息失败，请稍后重试", c)
+	}
+}
+
+// 一定日期范围内的数据明细
+func GetAnalysis4(c *gin.Context) {
+	user, _ := c.Get("user")
+	handlerid := user.(models.Users).Username
+	feedbackdatestart := c.DefaultQuery("feedbackdatestart", "1900-01-01")
+	if feedbackdatestart == "" {
+		feedbackdatestart = "1900-01-01"
+	}
+	feedbackdatestart = feedbackdatestart + " 00:00:00"
+	feedbackdateend := c.DefaultQuery("feedbackdateend", "3000-12-31")
+	if feedbackdateend == "" {
+		feedbackdateend = "3000-12-31"
+	}
+	feedbackdateend = feedbackdateend + " 23:59:59"
+	succ, analysisRecordList4, count := models.GetAnalysisRecordList4(handlerid, feedbackdatestart, feedbackdateend)
+	if succ {
+		for i := 0; i < len(*analysisRecordList4); i++ {
+			// 反馈时间
+			t1, _ := time.Parse(time.RFC3339, (*analysisRecordList4)[i].Feedbackdate)
+			(*analysisRecordList4)[i].Feedbackdate = t1.Format("2006-01-02 15:04:05")
+			// 结案时间
+			t2, _ := time.Parse(time.RFC3339, (*analysisRecordList4)[i].Closetime)
+			(*analysisRecordList4)[i].Closetime = t2.Format("2006-01-02 15:04:05")
+		}
+		common.OkWithDataC(count, analysisRecordList4, c)
 	} else {
 		common.FailWithMsg("获取信息失败，请稍后重试", c)
 	}
