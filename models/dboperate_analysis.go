@@ -35,7 +35,7 @@ type AnalysisRecordListSum struct {
 }
 
 type AnalysisRecordList4 struct {
-	Customername       string  `json:"customername"`
+	Cname              string  `json:"cname"`
 	Number             string  `json:"number"`
 	Title              string  `json:"title"`
 	Content            string  `json:"content"`
@@ -131,7 +131,7 @@ func GetAnalysisRecordListSum(handlerid string, feedbackdatestart string, feedba
 func GetAnalysisRecordList4(handlerid string, feedbackdatestart string, feedbackdateend string) (bool, *[]AnalysisRecordList4, int64) {
 	var d1 []AnalysisRecordList4
 	res := globals.DB.Table("records a").
-		Select("b.customername, a.`number`, a.title, a.content, c.realName feedbackname, a.feedbackdate, CONCAT(a.productid,\".\",d.productname) productname, a.urgent, CONCAT(a.issuemainid,\".\",e.mainName) issuemainname, CONCAT(a.issuedetailid,\".\",f.detailName) issuedetailname, g.realName handlername, a.handleestimatetime, a.handleactualtime, a.handlereply, a.casestatus, a.onsite, a.closetime, a.mark").
+		Select("b.cname, a.`number`, a.title, a.content, c.realName feedbackname, a.feedbackdate, CONCAT(a.productid,\".\",d.productname) productname, a.urgent, CONCAT(a.issuemainid,\".\",e.mainName) issuemainname, CONCAT(a.issuedetailid,\".\",f.detailName) issuedetailname, g.realName handlername, a.handleestimatetime, a.handleactualtime, a.handlereply, a.casestatus, a.onsite, a.closetime, a.mark").
 		Joins("left join customers b on b.customerid = a.customerid").
 		Joins("left join users c on c.username = a.feedbackid").
 		Joins("LEFT JOIN products d on d.productid = a.productid").
