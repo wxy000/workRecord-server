@@ -57,18 +57,28 @@ func GetAnalysis2(c *gin.Context) {
 	}
 	feedbackdateend = feedbackdateend + " 23:59:59"
 	succ, analysisRecordList2, count := models.GetAnalysisRecordList2(handlerid, feedbackdatestart, feedbackdateend)
-	if succ {
+	succ1, analysisRecordListSum, _ := models.GetAnalysisRecordListSum(handlerid, feedbackdatestart, feedbackdateend)
+	if succ && succ1 {
 		var es2s []map[string]string
 		var ac2s []map[string]string
+		var tbs []map[string]interface{}
 		for i := 0; i < len(*analysisRecordList2); i++ {
 			es2 := map[string]string{"name": (*analysisRecordList2)[i].Cname, "value": strconv.FormatFloat(float64((*analysisRecordList2)[i].Handleestimatetime), 'f', 2, 32)}
 			ac2 := map[string]string{"name": (*analysisRecordList2)[i].Cname, "value": strconv.FormatFloat(float64((*analysisRecordList2)[i].Handleactualtime), 'f', 2, 32)}
 			es2s = append(es2s, es2)
 			ac2s = append(ac2s, ac2)
+			// ---
+			es := (*analysisRecordList2)[i].Handleestimatetime
+			esv := (*analysisRecordList2)[i].Handleestimatetime / (*analysisRecordListSum)[0].Handleestimatetime
+			ac := (*analysisRecordList2)[i].Handleactualtime
+			acv := (*analysisRecordList2)[i].Handleactualtime / (*analysisRecordListSum)[0].Handleactualtime
+			tb := map[string]interface{}{"name": (*analysisRecordList2)[i].Cname, "es": es, "esv": esv, "ac": ac, "acv": acv}
+			tbs = append(tbs, tb)
 		}
 		common.OkWithDataC(count, gin.H{
 			"es2s": es2s,
 			"ac2s": ac2s,
+			"tbs":  tbs,
 		}, c)
 	} else {
 		common.FailWithMsg("获取信息失败，请稍后重试", c)
@@ -91,7 +101,8 @@ func GetAnalysis3(c *gin.Context) {
 	feedbackdateend = feedbackdateend + " 23:59:59"
 	succ, analysisRecordList3, count := models.GetAnalysisRecordList3(handlerid, feedbackdatestart, feedbackdateend)
 	succ1, analysisRecordList3_1, _ := models.GetAnalysisRecordList3_1(handlerid, feedbackdatestart, feedbackdateend)
-	if succ && succ1 {
+	succ2, analysisRecordListSum, _ := models.GetAnalysisRecordListSum(handlerid, feedbackdatestart, feedbackdateend)
+	if succ && succ1 && succ2 {
 		// 标准分类
 		var es3sall []map[string]interface{}
 		var es3sall_item_sz []map[string]interface{}
@@ -118,16 +129,25 @@ func GetAnalysis3(c *gin.Context) {
 		// 自定义分类
 		var es3s []map[string]interface{}
 		var ac3s []map[string]interface{}
+		var tbs []map[string]interface{}
 		for i := 0; i < len(*analysisRecordList3_1); i++ {
 			es3 := map[string]interface{}{"name": (*analysisRecordList3_1)[i].Classname, "value": (*analysisRecordList3_1)[i].Handleestimatetime}
 			ac3 := map[string]interface{}{"name": (*analysisRecordList3_1)[i].Classname, "value": (*analysisRecordList3_1)[i].Handleactualtime}
 			es3s = append(es3s, es3)
 			ac3s = append(ac3s, ac3)
+			// ---
+			es := (*analysisRecordList3_1)[i].Handleestimatetime
+			esv := (*analysisRecordList3_1)[i].Handleestimatetime / (*analysisRecordListSum)[0].Handleestimatetime
+			ac := (*analysisRecordList3_1)[i].Handleactualtime
+			acv := (*analysisRecordList3_1)[i].Handleactualtime / (*analysisRecordListSum)[0].Handleactualtime
+			tb := map[string]interface{}{"name": (*analysisRecordList3_1)[i].Classname, "es": es, "esv": esv, "ac": ac, "acv": acv}
+			tbs = append(tbs, tb)
 		}
 		common.OkWithDataC(count, gin.H{
 			"es3sall": es3sall,
 			"es3s":    es3s,
 			"ac3s":    ac3s,
+			"tbs":     tbs,
 		}, c)
 	} else {
 		common.FailWithMsg("获取信息失败，请稍后重试", c)

@@ -29,6 +29,11 @@ type AnalysisRecordList3_1 struct {
 	Handleactualtime   float32 `json:"handleactualtime"`
 }
 
+type AnalysisRecordListSum struct {
+	Handleestimatetime float32 `json:"handleestimatetime"`
+	Handleactualtime   float32 `json:"handleactualtime"`
+}
+
 func GetAnalysisRecordList1(handlerid string, feedbackdatestart string, feedbackdateend string) (bool, *[]AnalysisRecordList1, int64) {
 	var d1 []AnalysisRecordList1
 	res := globals.DB.Table("records").
@@ -81,7 +86,20 @@ func GetAnalysisRecordList3_1(handlerid string, feedbackdatestart string, feedba
 		Joins("LEFT JOIN issuedetails b ON b.detailid = a.issuedetailid").
 		Joins("LEFT JOIN classes c ON c.classid = b.classid").
 		Where("handlerid = ? AND feedbackdate BETWEEN ? AND ?", handlerid, feedbackdatestart, feedbackdateend).
-		Group("c.classid")
+		Group("c.classid").
+		Order("handleestimatetime desc")
+	r1 := res.Scan(&d1)
+	if r1.Error != nil {
+		return false, nil, 0
+	}
+	return true, &d1, r1.RowsAffected
+}
+
+func GetAnalysisRecordListSum(handlerid string, feedbackdatestart string, feedbackdateend string) (bool, *[]AnalysisRecordListSum, int64) {
+	var d1 []AnalysisRecordListSum
+	res := globals.DB.Table("records a").
+		Select("sum(handleestimatetime) handleestimatetime,sum(handleactualtime) handleactualtime").
+		Where("handlerid = ? AND feedbackdate BETWEEN ? AND ?", handlerid, feedbackdatestart, feedbackdateend)
 	r1 := res.Scan(&d1)
 	if r1.Error != nil {
 		return false, nil, 0

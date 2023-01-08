@@ -44,12 +44,12 @@ func GetRecordByHandlerid(handlerid string, c *gin.Context) (bool, *[]RecordList
 	res := globals.DB.Table("records a").
 		Select("a.id, a.customerid, b.customername, a.`number`, a.title, a.content, a.feedbackid, c.realName feedbackname, a.feedbackdate, a.productid, CONCAT(a.productid,\".\",d.productname) productname, a.urgent, a.issuemainid, CONCAT(a.issuemainid,\".\",e.mainName) issuemainname, a.issuedetailid, CONCAT(a.issuedetailid,\".\",f.detailName) issuedetailname, a.handlerid, g.realName handlername, a.handleestimatetime, a.handleactualtime, a.handlereply, a.casestatus, a.onsite, a.closetime, a.bugpeopleid, h.realName bugpeoplename, a.mark").
 		Joins("left join customers b on b.customerid = a.customerid").
-		Joins("left join users c on c.userid = a.feedbackid").
+		Joins("left join users c on c.username = a.feedbackid").
 		Joins("LEFT JOIN products d on d.productid = a.productid").
 		Joins("LEFT JOIN issuemains e on e.mainid = a.issuemainid").
 		Joins("left join issuedetails f on f.detailid = a.issuedetailid").
-		Joins("left join users g on g.userid = a.handlerid").
-		Joins("left join users h on h.userid = a.bugpeopleid").
+		Joins("left join users g on g.username = a.handlerid").
+		Joins("left join users h on h.username = a.bugpeopleid").
 		Where("a.handlerid = ?", handlerid).
 		Order("a.feedbackdate desc")
 
