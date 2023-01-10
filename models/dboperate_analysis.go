@@ -55,6 +55,13 @@ type AnalysisRecordList4 struct {
 	Mark               string  `json:"mark"`
 }
 
+type AnalysisRecordList5 struct {
+	Typea              string  `json:"typea"`
+	Ny                 string  `json:"ny"`
+	Handleestimatetime float32 `json:"handleestimatetime"`
+	Handleactualtime   float32 `json:"handleactualtime"`
+}
+
 func GetAnalysisRecordList1(handlerid string, feedbackdatestart string, feedbackdateend string) (bool, *[]AnalysisRecordList1, int64) {
 	var d1 []AnalysisRecordList1
 	res := globals.DB.Table("records").
@@ -140,6 +147,50 @@ func GetAnalysisRecordList4(handlerid string, feedbackdatestart string, feedback
 		Joins("left join users g on g.username = a.handlerid").
 		Where("handlerid = ? AND feedbackdate BETWEEN ? AND ?", handlerid, feedbackdatestart, feedbackdateend).
 		Order("a.feedbackdate desc")
+	r1 := res.Scan(&d1)
+	if r1.Error != nil {
+		return false, nil, 0
+	}
+	return true, &d1, r1.RowsAffected
+}
+
+func GetAnalysisRecordList5(handlerid string, feedbackdatestart string, feedbackdateend string) (bool, *[]AnalysisRecordList5, int64) {
+	var d1 []AnalysisRecordList5
+	// 签单
+	sql1 := ` SELECT '1' typea,CONCAT(nian, '-', LPAD(yue, 2, 0)) ny,SUM(IFNULL(handleestimatetime, 0)) handleestimatetime,SUM(IFNULL(handleactualtime, 0)) handleactualtime
+				FROM rangemonths
+				LEFT JOIN (SELECT *
+							 FROM records a
+							 LEFT JOIN issuedetails b ON b.detailid = a.issuedetailid
+							WHERE b.classid IN ('C01','C02','C03','C11')
+							  AND a.handlerid = ?
+							  AND a.feedbackdate BETWEEN ? AND ?
+						  ) records ON feedbackdate BETWEEN datestart AND dateend
+			   GROUP BY nian,yue `
+	// 返工
+	sql2 := ` SELECT '2' typea,CONCAT(nian, '-', LPAD(yue, 2, 0)) ny,SUM(IFNULL(handleestimatetime, 0)) handleestimatetime,SUM(IFNULL(handleactualtime, 0)) handleactualtime
+				FROM rangemonths
+				LEFT JOIN (SELECT *
+							 FROM records a
+							 LEFT JOIN issuedetails b ON b.detailid = a.issuedetailid
+							WHERE b.classid IN ('C04')
+							  AND a.handlerid = ?
+							  AND a.feedbackdate BETWEEN ? AND ?
+						  ) records ON feedbackdate BETWEEN datestart AND dateend
+			   GROUP BY nian,yue `
+	// 问题处理
+	sql3 := ` SELECT '3' typea,CONCAT(nian, '-', LPAD(yue, 2, 0)) ny,SUM(IFNULL(handleestimatetime, 0)) handleestimatetime,SUM(IFNULL(handleactualtime, 0)) handleactualtime
+				FROM rangemonths
+				LEFT JOIN (SELECT *
+							 FROM records a
+							 LEFT JOIN issuedetails b ON b.detailid = a.issuedetailid
+							WHERE b.classid NOT IN ('C01','C02','C03','C04','C11')
+							  AND a.handlerid = ?
+							  AND a.feedbackdate BETWEEN ? AND ?
+						  ) records ON feedbackdate BETWEEN datestart AND dateend
+			   GROUP BY nian,yue `
+	sql := " SELECT * FROM ( " + sql1 + " UNION ALL " + sql2 + " UNION ALL " + sql3 + " ) xx WHERE handleestimatetime <> 0 ORDER BY typea,ny "
+	res := globals.DB.Raw(sql, handlerid, feedbackdatestart, feedbackdateend, handlerid, feedbackdatestart, feedbackdateend, handlerid, feedbackdatestart, feedbackdateend)
 	r1 := res.Scan(&d1)
 	if r1.Error != nil {
 		return false, nil, 0

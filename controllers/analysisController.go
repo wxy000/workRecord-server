@@ -184,3 +184,134 @@ func GetAnalysis4(c *gin.Context) {
 		common.FailWithMsg("获取信息失败，请稍后重试", c)
 	}
 }
+
+// 一定日期范围内的-签单/返工/问题处理
+func GetAnalysis5(c *gin.Context) {
+	user, _ := c.Get("user")
+	handlerid := user.(models.Users).Username
+	feedbackdatestart := c.DefaultQuery("feedbackdatestart", "1900-01-01")
+	if feedbackdatestart == "" {
+		feedbackdatestart = "1900-01-01"
+	}
+	feedbackdatestart = feedbackdatestart + " 00:00:00"
+	feedbackdateend := c.DefaultQuery("feedbackdateend", "3000-12-31")
+	if feedbackdateend == "" {
+		feedbackdateend = "3000-12-31"
+	}
+	feedbackdateend = feedbackdateend + " 23:59:59"
+	succ, analysisRecordList5, count := models.GetAnalysisRecordList5(handlerid, feedbackdatestart, feedbackdateend)
+	if succ {
+		// 预计
+		var es5s2s [][]map[string]interface{}
+		var es5s2 []map[string]interface{}
+		// 实际
+		var ac5s2s [][]map[string]interface{}
+		var ac5s2 []map[string]interface{}
+		for i := 0; i < len(*analysisRecordList5); i++ {
+			if i == 0 {
+				es5s2tmp := map[string]interface{}{(*analysisRecordList5)[i].Ny: (*analysisRecordList5)[i].Handleestimatetime}
+				es5s2 = append(es5s2, es5s2tmp)
+				ac5s2tmp := map[string]interface{}{(*analysisRecordList5)[i].Ny: (*analysisRecordList5)[i].Handleactualtime}
+				ac5s2 = append(ac5s2, ac5s2tmp)
+			} else {
+				if (*analysisRecordList5)[i].Typea == (*analysisRecordList5)[i-1].Typea {
+					es5s2tmp := map[string]interface{}{(*analysisRecordList5)[i].Ny: (*analysisRecordList5)[i].Handleestimatetime}
+					es5s2 = append(es5s2, es5s2tmp)
+					ac5s2tmp := map[string]interface{}{(*analysisRecordList5)[i].Ny: (*analysisRecordList5)[i].Handleactualtime}
+					ac5s2 = append(ac5s2, ac5s2tmp)
+				} else {
+					if (*analysisRecordList5)[i-1].Typea == "1" {
+						es5s2tmp := map[string]interface{}{"name": "客制签单时数(预计)"}
+						es5s2 = append(es5s2, es5s2tmp)
+						ac5s2tmp := map[string]interface{}{"name": "客制签单时数(实际)"}
+						ac5s2 = append(ac5s2, ac5s2tmp)
+					} else if (*analysisRecordList5)[i-1].Typea == "2" {
+						es5s2tmp := map[string]interface{}{"name": "返工赠送时数(预计)"}
+						es5s2 = append(es5s2, es5s2tmp)
+						ac5s2tmp := map[string]interface{}{"name": "返工赠送时数(实际)"}
+						ac5s2 = append(ac5s2, ac5s2tmp)
+					} else if (*analysisRecordList5)[i-1].Typea == "3" {
+						es5s2tmp := map[string]interface{}{"name": "问题处理时数(预计)"}
+						es5s2 = append(es5s2, es5s2tmp)
+						ac5s2tmp := map[string]interface{}{"name": "问题处理时数(实际)"}
+						ac5s2 = append(ac5s2, ac5s2tmp)
+					}
+					es5s2s = append(es5s2s, es5s2)
+					es5s2 = []map[string]interface{}{}
+					es5s2tmp := map[string]interface{}{(*analysisRecordList5)[i].Ny: (*analysisRecordList5)[i].Handleestimatetime}
+					es5s2 = append(es5s2, es5s2tmp)
+					ac5s2s = append(ac5s2s, ac5s2)
+					ac5s2 = []map[string]interface{}{}
+					ac5s2tmp := map[string]interface{}{(*analysisRecordList5)[i].Ny: (*analysisRecordList5)[i].Handleactualtime}
+					ac5s2 = append(ac5s2, ac5s2tmp)
+				}
+			}
+			if i == len(*analysisRecordList5)-1 {
+				if (*analysisRecordList5)[i].Typea == "1" {
+					es5s2tmp := map[string]interface{}{"name": "客制签单时数(预计)"}
+					es5s2 = append(es5s2, es5s2tmp)
+					ac5s2tmp := map[string]interface{}{"name": "客制签单时数(实际)"}
+					ac5s2 = append(ac5s2, ac5s2tmp)
+				} else if (*analysisRecordList5)[i].Typea == "2" {
+					es5s2tmp := map[string]interface{}{"name": "返工赠送时数(预计)"}
+					es5s2 = append(es5s2, es5s2tmp)
+					ac5s2tmp := map[string]interface{}{"name": "返工赠送时数(实际)"}
+					ac5s2 = append(ac5s2, ac5s2tmp)
+				} else if (*analysisRecordList5)[i].Typea == "3" {
+					es5s2tmp := map[string]interface{}{"name": "问题处理时数(预计)"}
+					es5s2 = append(es5s2, es5s2tmp)
+					ac5s2tmp := map[string]interface{}{"name": "问题处理时数(实际)"}
+					ac5s2 = append(ac5s2, ac5s2tmp)
+				}
+				es5s2s = append(es5s2s, es5s2)
+				ac5s2s = append(ac5s2s, ac5s2)
+			}
+		}
+		var es5s []map[string]interface{}
+		for i := 0; i < len(es5s2s); i++ {
+			es5 := make(map[string]interface{})
+			for j := 0; j < len(es5s2s[i]); j++ {
+				for key, value := range es5s2s[i][j] {
+					es5[key] = value
+				}
+			}
+			es5s = append(es5s, es5)
+		}
+		var ac5s []map[string]interface{}
+		for i := 0; i < len(ac5s2s); i++ {
+			ac5 := make(map[string]interface{})
+			for j := 0; j < len(ac5s2s[i]); j++ {
+				for key, value := range ac5s2s[i][j] {
+					ac5[key] = value
+				}
+			}
+			ac5s = append(ac5s, ac5)
+		}
+		esac := append(es5s, ac5s...)
+		// 表头
+		tbhm := make(map[string]string)
+		for i := 0; i < len(es5s2s); i++ {
+			for j := 0; j < len(es5s2s[i]); j++ {
+				for key := range es5s2s[i][j] {
+					if key != "name" {
+						tbhm[key] = key
+					}
+				}
+			}
+		}
+		var ths []map[string]interface{}
+		ths = append(ths, map[string]interface{}{"field": "name", "title": ""})
+		// 排序
+		m, ks := common.Map_string(tbhm)
+		for _, k := range ks {
+			th := map[string]interface{}{"field": m[k], "title": m[k]}
+			ths = append(ths, th)
+		}
+		common.OkWithDataC(count, gin.H{
+			"ths":  ths,
+			"esac": esac,
+		}, c)
+	} else {
+		common.FailWithMsg("获取信息失败，请稍后重试", c)
+	}
+}
