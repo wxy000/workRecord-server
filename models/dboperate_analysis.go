@@ -62,6 +62,13 @@ type AnalysisRecordList5 struct {
 	Handleactualtime   float32 `json:"handleactualtime"`
 }
 
+type AnalysisRecordList6 struct {
+	Cname              string  `json:"cname"`
+	Ny                 string  `json:"ny"`
+	Handleestimatetime float32 `json:"handleestimatetime"`
+	Handleactualtime   float32 `json:"handleactualtime"`
+}
+
 func GetAnalysisRecordList1(handlerid string, feedbackdatestart string, feedbackdateend string) (bool, *[]AnalysisRecordList1, int64) {
 	var d1 []AnalysisRecordList1
 	res := globals.DB.Table("records").
@@ -191,6 +198,24 @@ func GetAnalysisRecordList5(handlerid string, feedbackdatestart string, feedback
 			   GROUP BY nian,yue `
 	sql := " SELECT * FROM ( " + sql1 + " UNION ALL " + sql2 + " UNION ALL " + sql3 + " ) xx WHERE handleestimatetime <> 0 ORDER BY typea,ny "
 	res := globals.DB.Raw(sql, handlerid, feedbackdatestart, feedbackdateend, handlerid, feedbackdatestart, feedbackdateend, handlerid, feedbackdatestart, feedbackdateend)
+	r1 := res.Scan(&d1)
+	if r1.Error != nil {
+		return false, nil, 0
+	}
+	return true, &d1, r1.RowsAffected
+}
+
+func GetAnalysisRecordList6(handlerid string, feedbackdatestart string, feedbackdateend string) (bool, *[]AnalysisRecordList6, int64) {
+	var d1 []AnalysisRecordList6
+	sql := ` SELECT cname, CONCAT(nian,'-',LPAD( yue, 2, 0 )) ny,SUM(IFNULL( handleestimatetime, 0 )) handleestimatetime,SUM(IFNULL( handleactualtime, 0 )) handleactualtime 
+			   FROM rangemonths
+			   LEFT JOIN (SELECT * FROM records a
+				 		   WHERE a.handlerid = ?
+							 AND a.feedbackdate BETWEEN ? AND ?) records ON feedbackdate BETWEEN datestart AND dateend
+			   LEFT JOIN customers ON customers.customerid = records.customerid
+			  GROUP BY nian,yue,cname 
+			  ORDER BY cname,ny,handleestimatetime DESC `
+	res := globals.DB.Raw(sql, handlerid, feedbackdatestart, feedbackdateend)
 	r1 := res.Scan(&d1)
 	if r1.Error != nil {
 		return false, nil, 0

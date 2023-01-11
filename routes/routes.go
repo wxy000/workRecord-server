@@ -44,6 +44,8 @@ func RegisterRoute(c *gin.Engine) {
 			analysis.GET("/my/getAnalysis4", middleware.JWTAuthMiddleware(), controllers.GetAnalysis4)
 			// 一定日期范围内的-签单/返工/问题处理
 			analysis.GET("/my/getAnalysis5", middleware.JWTAuthMiddleware(), controllers.GetAnalysis5)
+			// 一定日期范围内的-按月按客户统计
+			analysis.GET("/my/getAnalysis6", middleware.JWTAuthMiddleware(), controllers.GetAnalysis6)
 		}
 	}
 

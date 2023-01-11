@@ -3,6 +3,7 @@ package controllers
 import (
 	"server/common"
 	"server/models"
+	"sort"
 	"strconv"
 	"time"
 
@@ -310,6 +311,112 @@ func GetAnalysis5(c *gin.Context) {
 		common.OkWithDataC(count, gin.H{
 			"ths":  ths,
 			"esac": esac,
+		}, c)
+	} else {
+		common.FailWithMsg("获取信息失败，请稍后重试", c)
+	}
+}
+
+// 一定日期范围内的-按月按客户统计
+func GetAnalysis6(c *gin.Context) {
+	user, _ := c.Get("user")
+	handlerid := user.(models.Users).Username
+	feedbackdatestart := c.DefaultQuery("feedbackdatestart", "1900-01-01")
+	if feedbackdatestart == "" {
+		feedbackdatestart = "1900-01-01"
+	}
+	feedbackdatestart = feedbackdatestart + " 00:00:00"
+	feedbackdateend := c.DefaultQuery("feedbackdateend", "3000-12-31")
+	if feedbackdateend == "" {
+		feedbackdateend = "3000-12-31"
+	}
+	feedbackdateend = feedbackdateend + " 23:59:59"
+	succ, analysisRecordList6, count := models.GetAnalysisRecordList6(handlerid, feedbackdatestart, feedbackdateend)
+	if succ {
+		// x轴
+		ths_map := make(map[string]string)
+		for i := 0; i < len(*analysisRecordList6); i++ {
+			ths_map[(*analysisRecordList6)[i].Ny] = (*analysisRecordList6)[i].Ny
+		}
+		var ths []string
+		for key := range ths_map {
+			ths = append(ths, key)
+		}
+		sort.Strings(ths)
+		// 客户信息
+		cus_map := make(map[string]string)
+		for i := 0; i < len(*analysisRecordList6); i++ {
+			cus_map[(*analysisRecordList6)[i].Cname] = (*analysisRecordList6)[i].Cname
+		}
+		var cus []string
+		for key := range cus_map {
+			cus = append(cus, key)
+		}
+		// 数据
+		var es6s2s [][]map[string]interface{}
+		var es6s2 []map[string]interface{}
+		for i := 0; i < len(*analysisRecordList6); i++ {
+			if i == 0 {
+				es6s2_m := map[string]interface{}{(*analysisRecordList6)[i].Ny: (*analysisRecordList6)[i].Handleestimatetime}
+				es6s2 = append(es6s2, es6s2_m)
+			} else {
+				if (*analysisRecordList6)[i].Cname == (*analysisRecordList6)[i-1].Cname {
+					es6s2_m := map[string]interface{}{(*analysisRecordList6)[i].Ny: (*analysisRecordList6)[i].Handleestimatetime}
+					es6s2 = append(es6s2, es6s2_m)
+				} else {
+					es6s2_m := map[string]interface{}{"name": (*analysisRecordList6)[i-1].Cname}
+					es6s2 = append(es6s2, es6s2_m)
+					es6s2s = append(es6s2s, es6s2)
+
+					es6s2 = []map[string]interface{}{}
+					es6s2_m1 := map[string]interface{}{(*analysisRecordList6)[i].Ny: (*analysisRecordList6)[i].Handleestimatetime}
+					es6s2 = append(es6s2, es6s2_m1)
+				}
+			}
+			if i == len(*analysisRecordList6)-1 {
+				es6s2_m := map[string]interface{}{"name": (*analysisRecordList6)[i].Cname}
+				es6s2 = append(es6s2, es6s2_m)
+				es6s2s = append(es6s2s, es6s2)
+			}
+		}
+		var es6s_tmps []map[string]interface{}
+		for i := 0; i < len(es6s2s); i++ {
+			es6s_tmp := make(map[string]interface{})
+			for j := 0; j < len(es6s2s[i]); j++ {
+				for key, value := range es6s2s[i][j] {
+					es6s_tmp[key] = value
+				}
+			}
+			es6s_tmps = append(es6s_tmps, es6s_tmp)
+		}
+		var es6s []map[string]interface{}
+		for i := 0; i < len(es6s_tmps); i++ {
+			es6s_tmp1 := make(map[string]interface{})
+			var es6s_data []float32
+			for j := 0; j < len(ths); j++ {
+				flag := false
+				for key, value := range es6s_tmps[i] {
+					if key == "name" {
+						es6s_tmp1["name"] = value
+						es6s_tmp1["type"] = "bar"
+					} else {
+						if key == ths[j] {
+							es6s_data = append(es6s_data, value.(float32))
+							flag = true
+						}
+					}
+				}
+				if !flag {
+					es6s_data = append(es6s_data, 0)
+				}
+			}
+			es6s_tmp1["data"] = es6s_data
+			es6s = append(es6s, es6s_tmp1)
+		}
+		common.OkWithDataC(count, gin.H{
+			"ths":  ths,
+			"cus":  cus,
+			"es6s": es6s,
 		}, c)
 	} else {
 		common.FailWithMsg("获取信息失败，请稍后重试", c)
